@@ -1,34 +1,24 @@
-import Head from 'next/head'
-import clientPromise from '../lib/mongodb'
+import Head from 'next/head';
 
-export default function Home({ movies,moviesYear }) {
-  console.log(movies)
+
+export default function MovieDetails({ movie }) {
+    
+
   return (
     <div className="container">
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
-      </Head>
-      {
-        movies.map(movie => (
-          <div key={movie.title}>
-            {movie.title}
+          </Head>
+          <div>
+              {movie.title}
           </div>
-        ))
-      }
-
-
-      <hr />
-      <h3>Find out 2011 movies with 9 rating</h3>
-   
-      {
-        moviesYear.map(movie => (
-          <div key={movie.title}>
-            {movie.title}
+          <div>
+              {movie.fullplot}
           </div>
-        ))
-      }
 
+
+ 
       <footer>
         <a
           href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
@@ -194,25 +184,13 @@ export default function Home({ movies,moviesYear }) {
 }
 
 export async function getServerSideProps(context) {
-  try {
-    const client = await clientPromise
-    const db = client.db("sample_mflix");
-    const data = await db.collection("movies").find({}).limit(20).toArray();
-    const movies = JSON.parse(JSON.stringify(data));    // client.db() will be the default database passed in the MONGODB_URI
-    const data2 = await db.collection("movies").find({year:2011, 'imdb.rating':{$gt:9}}).limit(5).toArray();
-    const moviesYear = JSON.parse(JSON.stringify(data2));    // client.db() will be the default database passed in the MONGODB_URI
-    // You can change the database by calling the client.db() function and specifying a database like:
-    // const db = client.db("myDatabase");
-    // Then you can execute queries against your database like so:
-    // db.find({}) or any of the MongoDB Node Driver commands
-    // await clientPromise
+    console.log(context.query.movie_id);
+
+    const data = await fetch(`http://localhost:3000/api/moviedetails?movie_id=${context.query.movie_id}`);
+    const movie = await data.json();
+    console.log(movie)
+
     return {
-      props: { movies,moviesYear },
+        props:{movie}
     }
-  } catch (e) {
-    console.error(e)
-    return {
-      props: { isConnected: false },
-    }
-  }
 }
